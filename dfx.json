@@ -1,0 +1,29 @@
+{
+  "canisters": {
+    "memeployer_backend": {
+      "main": "src/memeployer_backend/main.mo",
+      "type": "motoko"
+    },
+    "memeployer_frontend": {
+      "dependencies": [
+        "memeployer_backend"
+      ],
+      "frontend": {
+        "entrypoint": "src/memeployer_frontend/src/index.html"
+      },
+      "source": [
+        "src/memeployer_frontend/assets",
+        "dist/memeployer_frontend/"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
