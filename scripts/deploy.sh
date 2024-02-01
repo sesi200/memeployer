@@ -11,4 +11,4 @@ identity ${identity} "~/.config/dfx/identity/${identity}/identity.pem"
 call memeployer_backend.upload_icrc_binary(file "icrc.wasm.gz")
 END
 
-dfx canister call memeployer_backend deployNewProject '(record { token_symbol = "SYMB"; token_name = "token name"; transfer_fee = 5;})'
+dfx canister call memeployer_backend deployNewProject '(record { icrc_config = opt record {token_symbol = "SYMB"; token_name = "token name"; transfer_fee = 5;}})'
