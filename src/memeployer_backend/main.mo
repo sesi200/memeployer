@@ -1,12 +1,22 @@
+import Blob "mo:base/Blob";
+import Buffer "mo:base/Buffer";
 import Cycles "mo:base/ExperimentalCycles";
+import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import Nat "mo:base/Nat";
+import Nat8 "mo:base/Nat8";
 import Principal "mo:base/Principal";
 import Text "mo:base/Text";
+
+import Account "Account";
 import LedgerTypes "LedgerTypes";
 import AssetCanisterTypes "AssetCanisterTypes";
+import Ledger "canister:ledger";
+import CMC "canister:cmc";
 
 actor class Memeployer() = self {
+  let MINT_MEMO : Nat64 = 1347768404;
+
   type ICRCConfig = {
     token_symbol : Text;
     token_name : Text;
@@ -55,22 +65,22 @@ actor class Memeployer() = self {
   };
   stable var nft_wasm : ?Blob = null;
 
-  func createCanister(coController : Principal) : async* Principal {
+  func createCanister(coController : Principal, cycles : Nat) : async* Principal {
     let IC0 : Management = actor ("aaaaa-aa");
     let this = Principal.fromActor(self);
 
-    Cycles.add(1_000_000_000_000);
+    Cycles.add(cycles);
     (await IC0.create_canister({ settings = ?{ controllers = ?[this, coController] } })).canister_id;
   };
 
-  func createLedger(coController : Principal, config : ICRCConfig) : async* Principal {
+  func createLedger(coController : Principal, config : ICRCConfig, cycles : Nat) : async* Principal {
     let IC0 : Management = actor ("aaaaa-aa");
     let this = Principal.fromActor(self);
     let real_icrc_wasm = switch (icrc_wasm) {
       case (?value) { value };
       case (null) { throw Error.reject("ICRC wasm not uploaded") };
     };
-    let icrc = await* createCanister(coController);
+    let icrc = await* createCanister(coController, cycles);
     await IC0.install_code(
       {
         mode = #install;
@@ -113,14 +123,14 @@ actor class Memeployer() = self {
     icrc;
   };
 
-  func createFrontend(coController : Principal, config : FrontendConfig) : async* Principal {
+  func createFrontend(coController : Principal, config : FrontendConfig, cycles : Nat) : async* Principal {
     let IC0 : Management = actor ("aaaaa-aa");
     let this = Principal.fromActor(self);
     let real_frontend_wasm = switch (frontend_wasm) {
       case (?value) { value };
       case (null) { throw Error.reject("ICRC wasm not uploaded") };
     };
-    let frontend = await* createCanister(coController);
+    let frontend = await* createCanister(coController, cycles);
     await IC0.install_code(
       {
         mode = #install;
@@ -145,20 +155,37 @@ actor class Memeployer() = self {
     frontend;
   };
 
+  func mintAddress() : Account.AccountIdentifier {
+    let this = Principal.fromActor(self);
+    let cmc : Principal = Principal.fromActor(CMC);
+    Account.accountIdentifier(cmc, Account.principalToSubaccount(this));
+  };
+
+  public shared (args) func getDepositAddress(sub : ?Principal) : async Account.AccountIdentifier {
+    let this = Principal.fromActor(self);
+    let principal = switch (sub) {
+      case (?sub) { sub };
+      case (null) { args.caller };
+    };
+
+    return Account.accountIdentifier(this, Account.principalToSubaccount(principal));
+  };
+
   public query func greet(name : Text) : async Text {
     return "Hello, " # name # "!";
   };
 
   public shared (args) func deployNewProject(input : NewInput) : async NewResult {
+    let cycles = await convert(args.caller);
     let icrc_canister_id = switch (input.icrc_config) {
       case (?icrc_config) {
-        ?(await* createLedger(args.caller, icrc_config));
+        ?(await* createLedger(args.caller, icrc_config, (cycles / 10 * 2)));
       };
       case (null) { null /* not deploying an icrc token */ };
     };
     let frontend_canister_id = switch (input.frontend_config) {
       case (?frontend_config) {
-        ?(await* createFrontend(args.caller, frontend_config));
+        ?(await* createFrontend(args.caller, frontend_config, (cycles / 10 * 7)));
       };
       case (null) { null /* not deploying a frontend */ };
     };
@@ -166,6 +193,31 @@ actor class Memeployer() = self {
     return {
       token_canister = icrc_canister_id;
       frontend_canister = frontend_canister_id;
+    };
+  };
+
+  func convert(from : Principal) : async Nat {
+    let this = Principal.fromActor(self);
+    let ans = await Ledger.transfer({
+      memo = MINT_MEMO;
+      amount = { e8s = 99990000 };
+      fee = { e8s = 10000 };
+      from_subaccount = ?Account.principalToSubaccount(from);
+      to = mintAddress();
+      created_at_time = null;
+    });
+    let blockIndex = switch (ans) {
+      case (#Ok(blockIndex)) { blockIndex };
+      case (#Err(err)) { Debug.trap("aaaa") };
+    };
+
+    let mint = await CMC.notify_top_up({
+      block_index = blockIndex;
+      canister_id = this;
+    });
+    switch (mint) {
+      case (#Ok(cycles)) { cycles };
+      case (#Err(err)) { Debug.trap("bbbb") };
     };
   };
 };
