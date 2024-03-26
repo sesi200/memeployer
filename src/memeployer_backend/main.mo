@@ -11,7 +11,7 @@ import Text "mo:base/Text";
 import Account "Account";
 import LedgerTypes "LedgerTypes";
 import AssetCanisterTypes "AssetCanisterTypes";
-import Ledger "canister:ledger";
+import Ledger "canister:icp_ledger";
 import CMC "canister:cmc";
 
 actor class Memeployer() = self {
@@ -36,6 +36,12 @@ actor class Memeployer() = self {
   type NewResult = {
     token_canister : ?Principal;
     frontend_canister : ?Principal;
+  };
+
+  type DepositAddressResult = {
+    deposit_address : Account.AccountIdentifier;
+    principal : Principal;
+    subaccount : Account.Subaccount;
   };
 
   type CanisterSettings = { controllers : ?[Principal] };
@@ -81,45 +87,43 @@ actor class Memeployer() = self {
       case (null) { throw Error.reject("ICRC wasm not uploaded") };
     };
     let icrc = await* createCanister(coController, cycles);
-    await IC0.install_code(
-      {
-        mode = #install;
-        canister_id = icrc;
-        wasm_module = real_icrc_wasm;
-        arg = to_candid (
-          (
-            #Init {
-              minting_account = {
-                owner = coController;
-                subaccount = null;
-              };
-              fee_collector_account = null;
-              transfer_fee = config.transfer_fee;
-              decimals = config.decimals;
-              max_memo_length = null;
-              token_symbol = config.token_symbol;
-              token_name = config.token_name;
-              metadata = [];
-              initial_balances = [];
-              feature_flags = ?{
-                icrc2 = true;
-              };
-              maximum_number_of_accounts = null;
-              accounts_overflow_trim_quantity = null;
-              archive_options = {
-                num_blocks_to_archive = 1_000_000_000;
-                max_transactions_per_response = ?50;
-                trigger_threshold = 1_000_000_000;
-                max_message_size_bytes = ?1_000;
-                cycles_for_archive_creation = ?1_000_000_000_000;
-                node_max_memory_size_bytes = null;
-                controller_id = this;
-              };
-            }
-          ) : LedgerTypes.LedgerArg
-        );
-      }
-    );
+    await IC0.install_code({
+      mode = #install;
+      canister_id = icrc;
+      wasm_module = real_icrc_wasm;
+      arg = to_candid (
+        (
+          #Init {
+            minting_account = {
+              owner = coController;
+              subaccount = null;
+            };
+            fee_collector_account = null;
+            transfer_fee = config.transfer_fee;
+            decimals = config.decimals;
+            max_memo_length = null;
+            token_symbol = config.token_symbol;
+            token_name = config.token_name;
+            metadata = [];
+            initial_balances = [];
+            feature_flags = ?{
+              icrc2 = true;
+            };
+            maximum_number_of_accounts = null;
+            accounts_overflow_trim_quantity = null;
+            archive_options = {
+              num_blocks_to_archive = 1_000_000_000;
+              max_transactions_per_response = ?50;
+              trigger_threshold = 1_000_000_000;
+              max_message_size_bytes = ?1_000;
+              cycles_for_archive_creation = ?1_000_000_000_000;
+              node_max_memory_size_bytes = null;
+              controller_id = this;
+            };
+          }
+        ) : LedgerTypes.LedgerArg
+      );
+    });
     icrc;
   };
 
@@ -131,14 +135,12 @@ actor class Memeployer() = self {
       case (null) { throw Error.reject("ICRC wasm not uploaded") };
     };
     let frontend = await* createCanister(coController, cycles);
-    await IC0.install_code(
-      {
-        mode = #install;
-        canister_id = frontend;
-        wasm_module = real_frontend_wasm;
-        arg = to_candid (());
-      }
-    );
+    await IC0.install_code({
+      mode = #install;
+      canister_id = frontend;
+      wasm_module = real_frontend_wasm;
+      arg = to_candid (());
+    });
     let asset_canister : AssetCanisterTypes.AssetCanister = actor (Principal.toText(frontend));
     await asset_canister.grant_permission({
       to_principal = coController;
@@ -161,14 +163,21 @@ actor class Memeployer() = self {
     Account.accountIdentifier(cmc, Account.principalToSubaccount(this));
   };
 
-  public shared (args) func getDepositAddress(sub : ?Principal) : async Account.AccountIdentifier {
+  public shared (args) func getDepositAddress(sub : ?Principal) : async DepositAddressResult {
     let this = Principal.fromActor(self);
     let principal = switch (sub) {
       case (?sub) { sub };
       case (null) { args.caller };
     };
 
-    return Account.accountIdentifier(this, Account.principalToSubaccount(principal));
+    let subaccount = Account.principalToSubaccount(principal);
+
+    return {
+      deposit_address = Account.accountIdentifier(this, subaccount);
+      principal = this;
+      subaccount = subaccount;
+    };
+
   };
 
   public query func greet(name : Text) : async Text {
@@ -202,8 +211,8 @@ actor class Memeployer() = self {
       memo = MINT_MEMO;
       amount = { e8s = 99990000 };
       fee = { e8s = 10000 };
-      from_subaccount = ?Account.principalToSubaccount(from);
-      to = mintAddress();
+      from_subaccount = ?Blob.toArray(Account.principalToSubaccount(from));
+      to = Blob.toArray(mintAddress());
       created_at_time = null;
     });
     let blockIndex = switch (ans) {

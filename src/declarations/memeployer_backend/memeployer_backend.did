@@ -1,0 +1,35 @@
+type Subaccount = blob;
+type NewResult = 
+ record {
+   frontend_canister: opt principal;
+   token_canister: opt principal;
+ };
+type NewInput = 
+ record {
+   frontend_config: opt FrontendConfig;
+   icrc_config: opt ICRCConfig;
+ };
+type Memeployer = 
+ service {
+   deployNewProject: (NewInput) -> (NewResult);
+   getDepositAddress: (opt principal) -> (DepositAddressResult);
+   greet: (text) -> (text) query;
+   upload_frontend_binary: (blob) -> () oneway;
+   upload_icrc_binary: (blob) -> () oneway;
+ };
+type ICRCConfig = 
+ record {
+   decimals: opt nat8;
+   token_name: text;
+   token_symbol: text;
+   transfer_fee: nat;
+ };
+type FrontendConfig = record {index_html: blob;};
+type DepositAddressResult = 
+ record {
+   deposit_address: AccountIdentifier;
+   "principal": principal;
+   subaccount: Subaccount;
+ };
+type AccountIdentifier = blob;
+service : () -> Memeployer

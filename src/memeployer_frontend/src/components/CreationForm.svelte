@@ -3,6 +3,7 @@
 	import { saveDeployment } from '$lib/deployments';
 	import { makeFrontendUrl } from '$lib/url';
 	import { fade } from 'svelte/transition';
+	import IcpBalance from './IcpBalance.svelte';
 
 	export let auth: AuthenticatedState;
 
@@ -10,6 +11,7 @@
 	let symbol = '';
 	let transferFee = 0;
 	let decimals: number | null = null;
+	let balanceSufficient = false;
 
 	type State =
 		| {
@@ -138,8 +140,12 @@
 			/>
 		</div>
 
-		<div class="mb-2 flex flex-col gap-2">
-			<button class="button" disabled={state.name === 'working'}>
+		<div class="">
+			<IcpBalance {auth} on:balanceUpdate={(e) => (balanceSufficient = e.detail)} />
+		</div>
+
+		<div class="mb-2 flex flex-col gap-2 mt-10">
+			<button class="button" disabled={state.name === 'working' || !balanceSufficient}>
 				{#if state.name === 'working'}
 					Creating token...
 				{:else}

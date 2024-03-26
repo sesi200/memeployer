@@ -4,7 +4,8 @@
       "main": "src/memeployer_backend/main.mo",
       "type": "motoko",
       "dependencies": [
-        "ledger",
+        "icp_ledger",
+        "icp_index",
         "cmc"
       ]
     },
@@ -23,28 +24,34 @@
       "type": "pull"
     },
     "cmc": {
-      "build": "",
-      "candid": "candid/nns-cycles-minting.did",
+      "type": "custom",
+      "candid": "./wasms/cmc.did",
+      "wasm": "./wasms/cmc.wasm.gz",
       "remote": {
         "id": {
-          "ic": "rkp4c-7iaaa-aaaaa-aaaca-cai",
-          "local": "rkp4c-7iaaa-aaaaa-aaaca-cai"
+          "ic": "rkp4c-7iaaa-aaaaa-aaaca-cai"
         }
-      },
-      "type": "custom",
-      "wasm": ""
+      }
     },
-    "ledger": {
-      "build": "",
-      "candid": "candid/nns-ledger.did",
+    "icp_ledger": {
+      "type": "custom",
+      "candid": "wasms/icp_ledger.did",
+      "wasm": "wasms/icp_ledger.wasm.gz",
       "remote": {
         "id": {
-          "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai",
-          "local": "ryjl3-tyaaa-aaaaa-aaaba-cai"
+          "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
         }
-      },
+      }
+    },
+    "icp_index": {
       "type": "custom",
-      "wasm": ""
+      "candid": "wasms/icp_ledger_index.did",
+      "wasm": "wasms/icp_ledger_index.wasm.gz",
+      "remote": {
+        "id": {
+          "ic": "qhbym-qaaaa-aaaaa-aaafq-cai"
+        }
+      }
     }
   },
   "output_env_file": ".env",

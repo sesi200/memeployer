@@ -4,6 +4,6 @@
 
 @layer components {
 	.button {
-		@apply bg-white px-4 py-4 rounded-lg text-black/100 hover:bg-white/90 transition-colors;
+		@apply bg-white px-4 py-4 rounded-lg text-black/100 hover:bg-white/90 transition-colors disabled:bg-white/10 disabled:text-white/50;
 	}
 }

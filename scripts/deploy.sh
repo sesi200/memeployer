@@ -1,7 +1,6 @@
 set -e
 
 dfx start --clean --background || true
-dfx nns install --ledger-accounts "$(dfx ledger account-id)" || true
 dfx deps pull
 dfx deps deploy || true
 dfx deploy --yes
