@@ -211,8 +211,8 @@ actor class Memeployer() = self {
       memo = MINT_MEMO;
       amount = { e8s = 99990000 };
       fee = { e8s = 10000 };
-      from_subaccount = ?Blob.toArray(Account.principalToSubaccount(from));
-      to = Blob.toArray(mintAddress());
+      from_subaccount = ?Account.principalToSubaccount(from);
+      to = mintAddress();
       created_at_time = null;
     });
     let blockIndex = switch (ans) {

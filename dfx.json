@@ -5,7 +5,6 @@
       "type": "motoko",
       "dependencies": [
         "icp_ledger",
-        "icp_index",
         "cmc"
       ]
     },
@@ -25,8 +24,8 @@
     },
     "cmc": {
       "type": "custom",
-      "candid": "./wasms/cmc.did",
-      "wasm": "./wasms/cmc.wasm.gz",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/425a0012aeb40008e2e72d913318bc9dbdf3b4f4/rs/nns/cmc/cmc.did",
+      "wasm": "https://download.dfinity.systems/ic/425a0012aeb40008e2e72d913318bc9dbdf3b4f4/canisters/cycles-minting-canister.wasm.gz",
       "remote": {
         "id": {
           "ic": "rkp4c-7iaaa-aaaaa-aaaca-cai"
@@ -35,21 +34,11 @@
     },
     "icp_ledger": {
       "type": "custom",
-      "candid": "wasms/icp_ledger.did",
-      "wasm": "wasms/icp_ledger.wasm.gz",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/425a0012aeb40008e2e72d913318bc9dbdf3b4f4/rs/rosetta-api/icp_ledger/ledger.did",
+      "wasm": "https://download.dfinity.systems/ic/425a0012aeb40008e2e72d913318bc9dbdf3b4f4/canisters/ledger-canister.wasm.gz",
       "remote": {
         "id": {
           "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
-        }
-      }
-    },
-    "icp_index": {
-      "type": "custom",
-      "candid": "wasms/icp_ledger_index.did",
-      "wasm": "wasms/icp_ledger_index.wasm.gz",
-      "remote": {
-        "id": {
-          "ic": "qhbym-qaaaa-aaaaa-aaafq-cai"
         }
       }
     }

@@ -2,7 +2,7 @@ import { HttpAgent, type Identity, Actor, type ActorSubclass } from '@dfinity/ag
 import { backendIdlFactory, ledgerIdlFactory } from './idlFactory';
 import { BACKEND_CANISTER_ID, DFX_NETWORK, HOST } from './config';
 import type { _SERVICE as BackendService } from '../../../declarations/memeployer_backend/memeployer_backend.did';
-import type { _SERVICE as LedgerService } from '../../../declarations/icp_index/icp_index.did';
+import type { _SERVICE as LedgerService } from '../../../declarations/icp_ledger/icp_ledger.did';
 
 export type BackendActorType = ReturnType<typeof createBackendActor>;
 export type LedgerActorType = ReturnType<typeof createLedgerActor>;
