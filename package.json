@@ -10,8 +10,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces",
-    "dev": "npm run dev --workspaces",
-    "prebuild": "dfx generate"
+    "dev": "npm run dev --workspaces"
   },
   "workspaces": [
     "src/memeployer_frontend"

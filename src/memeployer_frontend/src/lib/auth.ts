@@ -1,5 +1,10 @@
 import { writable } from 'svelte/store';
-import { createActor, type ActorType } from './actor';
+import {
+	createBackendActor,
+	type BackendActorType,
+	type LedgerActorType,
+	createLedgerActor
+} from './actor';
 import { AuthClient } from '@dfinity/auth-client';
 import { BACKEND_CANISTER_ID, HOST, II_URL } from './config';
 
@@ -9,7 +14,9 @@ type AuthState =
 	  }
 	| {
 			name: 'authenticated';
-			actor: ActorType;
+			actor: BackendActorType;
+			ledgerActor: LedgerActorType;
+			principal: string;
 	  }
 	| {
 			name: 'unauthenticated';
@@ -31,10 +38,14 @@ function createAuthStore() {
 		initialize: async () => {
 			const authClient = await AuthClient.create();
 			if (await authClient.isAuthenticated()) {
-				const actor = createActor(authClient.getIdentity());
+				const actor = createBackendActor(authClient.getIdentity());
+				const ledgerActor = createLedgerActor(authClient.getIdentity());
+
 				store.set({
 					name: 'authenticated',
-					actor
+					actor,
+					ledgerActor,
+					principal: authClient.getIdentity().getPrincipal().toString()
 				});
 			} else {
 				store.set({
@@ -51,8 +62,6 @@ function createAuthStore() {
 			});
 			const authClient = await AuthClient.create();
 			try {
-				console.log('II_URL:', II_URL);
-
 				await new Promise<void>((resolve, reject) => {
 					authClient.login({
 						identityProvider: II_URL,
@@ -61,11 +70,13 @@ function createAuthStore() {
 					});
 				});
 
-				const actor = createActor(authClient.getIdentity());
-
+				const actor = createBackendActor(authClient.getIdentity());
+				const ledgerActor = createLedgerActor(authClient.getIdentity());
 				store.set({
 					name: 'authenticated',
-					actor
+					actor,
+					ledgerActor,
+					principal: authClient.getIdentity().getPrincipal().toString()
 				});
 			} catch (e: unknown) {
 				if (e instanceof Error) {
