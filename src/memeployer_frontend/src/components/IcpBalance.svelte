@@ -74,8 +74,6 @@
 			addressPrincipal: response.principal,
 			addressSubaccount: response.subaccount
 		};
-
-		getBalance();
 	}
 
 	async function getBalance() {
@@ -88,6 +86,10 @@
 			subaccount: [state.addressSubaccount]
 		});
 
+		if (unmounted) {
+			return;
+		}
+
 		state = {
 			...state,
 			name: 'getting-balance',
@@ -97,8 +99,24 @@
 		dispatch('balanceUpdate', balance >= MIN_BALANCE);
 	}
 
+	async function pollBalance() {
+		while (true) {
+			if (state.name === 'getting-balance') {
+				getBalance();
+			}
+
+			if (unmounted) {
+				return;
+			}
+
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+		}
+	}
+
 	onMount(() => {
 		getAddress();
+
+		pollBalance();
 	});
 
 	onDestroy(() => {

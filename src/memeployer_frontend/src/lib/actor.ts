@@ -45,6 +45,6 @@ export const createLedgerActor = (identity: Identity): ActorSubclass<LedgerServi
 	// Creates an actor with using the candid interface and the HttpAgent
 	return Actor.createActor(ledgerIdlFactory, {
 		agent,
-		canisterId: 'qhbym-qaaaa-aaaaa-aaafq-cai'
+		canisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai'
 	});
 };
