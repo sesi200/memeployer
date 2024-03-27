@@ -1,5 +1,9 @@
 export const idlFactory = ({ IDL }) => {
-  const FrontendConfig = IDL.Record({ 'index_html' : IDL.Vec(IDL.Nat8) });
+  const FrontendFile = IDL.Record({
+    'content' : IDL.Vec(IDL.Nat8),
+    'path' : IDL.Text,
+    'content_type' : IDL.Text,
+  });
   const ICRCConfig = IDL.Record({
     'decimals' : IDL.Opt(IDL.Nat8),
     'token_symbol' : IDL.Text,
@@ -7,7 +11,7 @@ export const idlFactory = ({ IDL }) => {
     'token_name' : IDL.Text,
   });
   const NewInput = IDL.Record({
-    'frontend_config' : IDL.Opt(FrontendConfig),
+    'frontend_config' : IDL.Opt(IDL.Vec(FrontendFile)),
     'icrc_config' : IDL.Opt(ICRCConfig),
   });
   const NewResult = IDL.Record({

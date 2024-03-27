@@ -7,6 +7,7 @@ import Nat "mo:base/Nat";
 import Nat8 "mo:base/Nat8";
 import Principal "mo:base/Principal";
 import Text "mo:base/Text";
+import Iter "mo:base/Iter";
 
 import Account "Account";
 import LedgerTypes "LedgerTypes";
@@ -24,13 +25,15 @@ actor class Memeployer() = self {
     decimals : ?Nat8;
   };
 
-  type FrontendConfig = {
-    index_html : Blob;
+  type FrontendFile = {
+    path : Text;
+    content : Blob;
+    content_type : Text;
   };
 
   type NewInput = {
     icrc_config : ?ICRCConfig;
-    frontend_config : ?FrontendConfig;
+    frontend_config : ?[FrontendFile];
   };
 
   type NewResult = {
@@ -127,12 +130,12 @@ actor class Memeployer() = self {
     icrc;
   };
 
-  func createFrontend(coController : Principal, config : FrontendConfig, cycles : Nat) : async* Principal {
+  func createFrontend(coController : Principal, config : [FrontendFile], cycles : Nat) : async* Principal {
     let IC0 : Management = actor ("aaaaa-aa");
     let this = Principal.fromActor(self);
     let real_frontend_wasm = switch (frontend_wasm) {
       case (?value) { value };
-      case (null) { throw Error.reject("ICRC wasm not uploaded") };
+      case (null) { throw Error.reject("Asset canister wasm not uploaded") };
     };
     let frontend = await* createCanister(coController, cycles);
     await IC0.install_code({
@@ -146,13 +149,17 @@ actor class Memeployer() = self {
       to_principal = coController;
       permission = #Commit;
     });
-    await asset_canister.store({
-      key = "/index.html";
-      content_type = "text/html";
-      content_encoding = "identity";
-      content = config.index_html;
-      sha256 = null;
-    });
+
+    for (file in Iter.fromArray(config)) {
+      await asset_canister.store({
+        key = file.path;
+        content_type = file.content_type;
+        content_encoding = "identity";
+        content = file.content;
+        sha256 = null;
+      });
+
+    };
 
     frontend;
   };
@@ -211,8 +218,8 @@ actor class Memeployer() = self {
       memo = MINT_MEMO;
       amount = { e8s = 99990000 };
       fee = { e8s = 10000 };
-      from_subaccount = ?Account.principalToSubaccount(from);
-      to = mintAddress();
+      from_subaccount = ?Blob.toArray(Account.principalToSubaccount(from));
+      to = Blob.toArray(mintAddress());
       created_at_time = null;
     });
     let blockIndex = switch (ans) {

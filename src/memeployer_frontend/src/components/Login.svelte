@@ -9,16 +9,14 @@
 	}>();
 </script>
 
-<div class="mt-20">
-	<button on:click={() => dispatch('login')} disabled={auth.authenticating} class="button">
-		{#if auth.authenticating}
-			Please wait...
-		{:else}
-			Log in and get the party started
-		{/if}
-	</button>
-
-	{#if auth.error}
-		<p class="mt-10">{auth.error}</p>
+<button on:click={() => dispatch('login')} disabled={auth.authenticating} class="button">
+	{#if auth.authenticating}
+		Please wait...
+	{:else}
+		Log in and get the party started
 	{/if}
-</div>
+</button>
+
+{#if auth.error}
+	<p class="mt-10">{auth.error}</p>
+{/if}

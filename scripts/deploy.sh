@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-# - [x] get rid of download and just use the latest commit hash in dfx.json
-# - [x] get rid of ledger index
-# - [ ] upload website
-# - [ ] use exchange rate canister
-
 DEFAULT_IDENTITY=$(dfx identity whoami)
 DEFAULT_ACCOUNT_ID=$(dfx ledger account-id)
 
@@ -16,8 +11,13 @@ if [ "$MINTER_IDENTITY" == "$WHOAMI" ]; then
 fi
 
 if ! dfx identity list | grep -q $MINTER_IDENTITY; then
+  echo "Creating minter identity..."
   dfx identity new $MINTER_IDENTITY
   dfx identity use $DEFAULT_IDENTITY
+
+else
+  echo "Accessing minter identity..."
+
 fi
 
 MINT_ACC_ID=$(dfx ledger account-id --identity $MINTER_IDENTITY)
@@ -51,11 +51,14 @@ dfx deploy cmc --specified-id rkp4c-7iaaa-aaaaa-aaaca-cai --argument "(opt recor
     last_purged_notification = opt 0;
     exchange_rate_canister = null;
 })"
+
+# hack to get rid of dfx pull error
+rm ~/.cache/dfinity/pulled/rdmx6-jaaaa-aaaaa-aaadq-cai/canister.wasm.gz
+
 dfx deps pull
 dfx deps init
 dfx deps deploy internet_identity
-dfx deploy memeployer_backend
-dfx deploy memeployer_frontend
+dfx deploy
 
 ICRC1_LEDGER_WASM=$(hexdump -ve '1/1 "%.2x"' wasms/icrc1_ledger.wasm.gz | sed 's/../\\&/g')
 dfx canister call memeployer_backend upload_icrc_binary --argument-file <(echo "(blob \"$ICRC1_LEDGER_WASM\")")

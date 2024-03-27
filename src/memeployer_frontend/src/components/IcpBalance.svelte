@@ -132,8 +132,7 @@
 	<div class="">Loading ICP balance check...</div>
 {:else if state.name === 'getting-balance'}
 	<div class="">
-		To create your token and website and top the canister smart contracts up with plenty of cycles,
-		please send <code class="bg-white/20 px-2 py-1 rounded-md">1 ICP</code>
+		To cover the cost of deployment send <code class="bg-white/20 px-2 py-1 rounded-md">1 ICP</code>
 		to
 
 		<div class="mt-3">

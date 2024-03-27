@@ -6,7 +6,7 @@ type NewResult =
  };
 type NewInput = 
  record {
-   frontend_config: opt FrontendConfig;
+   frontend_config: opt vec FrontendFile;
    icrc_config: opt ICRCConfig;
  };
 type Memeployer = 
@@ -24,7 +24,12 @@ type ICRCConfig =
    token_symbol: text;
    transfer_fee: nat;
  };
-type FrontendConfig = record {index_html: blob;};
+type FrontendFile = 
+ record {
+   content: blob;
+   content_type: text;
+   path: text;
+ };
 type DepositAddressResult = 
  record {
    deposit_address: AccountIdentifier;

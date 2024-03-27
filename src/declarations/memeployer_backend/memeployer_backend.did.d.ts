@@ -8,7 +8,11 @@ export interface DepositAddressResult {
   'deposit_address' : AccountIdentifier,
   'subaccount' : Subaccount,
 }
-export interface FrontendConfig { 'index_html' : Uint8Array | number[] }
+export interface FrontendFile {
+  'content' : Uint8Array | number[],
+  'path' : string,
+  'content_type' : string,
+}
 export interface ICRCConfig {
   'decimals' : [] | [number],
   'token_symbol' : string,
@@ -23,7 +27,7 @@ export interface Memeployer {
   'upload_icrc_binary' : ActorMethod<[Uint8Array | number[]], undefined>,
 }
 export interface NewInput {
-  'frontend_config' : [] | [FrontendConfig],
+  'frontend_config' : [] | [Array<FrontendFile>],
   'icrc_config' : [] | [ICRCConfig],
 }
 export interface NewResult {
