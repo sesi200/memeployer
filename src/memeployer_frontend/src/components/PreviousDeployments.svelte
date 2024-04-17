@@ -11,11 +11,11 @@
 </script>
 
 {#if deployments !== null && deployments.length > 0}
-	<div class="border-t border-solid pt-4 mt-8">
+	<div class="border-t border-solid pt-10 mt-8">
 		<h2>You previously deployed:</h2>
-		<ul class="list-none">
+		<ul class="list-none mt-4">
 			{#each deployments as deployment}
-				<li class="mb-4">
+				<li class="mb-2">
 					<a
 						href={makeFrontendUrl(deployment.canisterId)}
 						class="text-white/80 hover:text-white transition-colors"
