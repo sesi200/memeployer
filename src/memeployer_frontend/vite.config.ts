@@ -1,9 +1,8 @@
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
-import { Networks } from './utils/network';
-import { canisterIdsToVite, readCanisterIds } from './utils/canisterIds';
-import { readFileSync } from 'fs';
 import { join } from 'path';
+import { defineConfig } from 'vite';
+import { readCanisterIds } from './utils/canisterIds';
+import { Networks } from './utils/network';
 
 const networks = new Networks({
 	local: {
@@ -18,7 +17,7 @@ const networks = new Networks({
 
 	ic: {
 		canisterIds: () => readCanisterIds(join(process.cwd(), '..', 'canister_ids.json'), 'ic'),
-		host: 'https://ic0.app',
+		host: 'https://icp0.io',
 		internetIdentity: 'https://identity.ic0.app'
 	}
 });
