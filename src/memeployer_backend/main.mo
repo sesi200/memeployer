@@ -1,5 +1,4 @@
 import Blob "mo:base/Blob";
-import Buffer "mo:base/Buffer";
 import Cycles "mo:base/ExperimentalCycles";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
@@ -8,6 +7,7 @@ import Nat8 "mo:base/Nat8";
 import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
+import List "mo:base/List";
 
 import Account "Account";
 import LedgerTypes "LedgerTypes";
@@ -39,6 +39,14 @@ actor class Memeployer() = self {
   type NewResult = {
     token_canister : ?Principal;
     frontend_canister : ?Principal;
+  };
+
+  stable var deployed_projects : List.List<(Principal, NewResult)> = null;
+
+  public shared (args) func listMyProjects() : async [NewResult] {
+    let filtered = List.filter<(Principal, NewResult)>(deployed_projects, func(c, _) { c == args.caller });
+    let mapped = List.map<(Principal, NewResult), NewResult>(filtered, func(_, p) { p });
+    List.toArray(mapped);
   };
 
   type DepositAddressResult = {
@@ -205,6 +213,17 @@ actor class Memeployer() = self {
       };
       case (null) { null /* not deploying a frontend */ };
     };
+
+    deployed_projects := List.push(
+      (
+        args.caller,
+        {
+          token_canister = icrc_canister_id;
+          frontend_canister = frontend_canister_id;
+        },
+      ),
+      deployed_projects,
+    );
 
     return {
       token_canister = icrc_canister_id;
