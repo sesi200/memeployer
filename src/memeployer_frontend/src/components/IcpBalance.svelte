@@ -7,6 +7,7 @@
 		Subaccount
 	} from '../../../declarations/memeployer_backend/memeployer_backend.did';
 	import { unreachable } from '$lib/unreachable';
+	import { BACKEND_CANISTER_ID } from '$lib/config';
 
 	export let auth: AuthenticatedState;
 
@@ -54,7 +55,7 @@
 		}
 
 		console.log(
-			`dfx canister call icp_ledger icrc1_transfer 'record { to = record { owner = principal "bd3sg-teaaa-aaaaa-qaaba-cai"; subaccount = opt vec {${extendUint8ArrayTo32Bytes(
+			`dfx canister call icp_ledger icrc1_transfer 'record { to = record { owner = principal "${BACKEND_CANISTER_ID}"; subaccount = opt vec {${extendUint8ArrayTo32Bytes(
 				Uint8Array.from(response.subaccount)
 			).join(
 				';'
@@ -68,7 +69,7 @@
 				? Array.from(response.deposit_address)
 				: response.deposit_address
 			)
-				.map((x) => x.toString(16))
+				.map((x) => x.toString(16).padStart(2, '0'))
 				.join(''),
 			balance_e8s: null,
 			addressPrincipal: response.principal,
